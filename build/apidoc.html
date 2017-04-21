@@ -1,0 +1,163 @@
+<div class="apidocDiv">
+<style>
+/*csslint
+*/
+.apidocDiv {
+    background: #fff;
+    font-family: Arial, Helvetica, sans-serif;
+}
+.apidocDiv a[href] {
+    color: #33f;
+    font-weight: bold;
+    text-decoration: none;
+}
+.apidocDiv a[href]:hover {
+    text-decoration: underline;
+}
+.apidocCodeCommentSpan {
+    background: #bbf;
+    color: #000;
+    display: block;
+}
+.apidocCodeKeywordSpan {
+    color: #d00;
+    font-weight: bold;
+}
+.apidocCodePre {
+    background: #eef;
+    border: 1px solid;
+    color: #777;
+    padding: 5px;
+    white-space: pre-wrap;
+}
+.apidocFooterDiv {
+    margin-top: 20px;
+    text-align: center;
+}
+.apidocModuleLi {
+    margin-top: 10px;
+}
+.apidocSectionDiv {
+    border-top: 1px solid;
+    margin-top: 20px;
+}
+.apidocSignatureSpan {
+    color: #777;
+    font-weight: bold;
+}
+</style>
+<h1>api documentation for
+    <a
+
+        href="https://github.com/vvo/gifify"
+
+    >gifify (v2.4.0)</a>
+</h1>
+<h4>Convert any video file to an optimized animated GIF</h4>
+<div class="apidocSectionDiv"><a
+    href="#apidoc.tableOfContents"
+    id="apidoc.tableOfContents"
+><h1>table of contents</h1></a><ol>
+
+    <li class="apidocModuleLi"><a href="#apidoc.module.gifify">module gifify</a><ol>
+
+        <li>
+
+            <a class="apidocElementLiA" href="#apidoc.element.gifify.gifify">
+            function <span class="apidocSignatureSpan"></span>gifify
+            <span class="apidocSignatureSpan">(streamOrFile, opts)</span>
+            </a>
+
+        </li>
+
+    </ol></li>
+
+</ol></div>
+
+<div class="apidocSectionDiv">
+<h1><a href="#apidoc.module.gifify" id="apidoc.module.gifify">module gifify</a></h1>
+
+
+    <h2>
+        <a href="#apidoc.element.gifify.gifify" id="apidoc.element.gifify.gifify">
+        function <span class="apidocSignatureSpan"></span>gifify
+        <span class="apidocSignatureSpan">(streamOrFile, opts)</span>
+        </a>
+    </h2>
+    <ul>
+    <li>description and source-code<pre class="apidocCodePre">function gifify(streamOrFile, opts) {
+  if (typeof streamOrFile === &#x27;string&#x27;) {
+    opts.inputFilePath = streamOrFile;
+  }
+
+  if (opts.fps === undefined) {
+    opts.fps = 10;
+  }
+
+  if (opts.speed === undefined) {
+    opts.speed = 1;
+  }
+
+  if (opts.colors === undefined) {
+    opts.colors = 80;
+  }
+
+  if (opts.compress === undefined) {
+    opts.compress = 40;
+  }
+
+  if (opts.from !== undefined &#x26;&#x26; typeof opts.from === &#x27;number&#x27; ||
+    typeof opts.from === &#x27;string&#x27; &#x26;&#x26; opts.from.indexOf(&#x27;:&#x27;) === -1) {
+    opts.from = parseFloat(opts.from) * 1000;
+  }
+
+  if (opts.to !== undefined &#x26;&#x26; typeof opts.to === &#x27;number&#x27; ||
+    typeof opts.to === &#x27;string&#x27; &#x26;&#x26; opts.to.indexOf(&#x27;:&#x27;) === -1) {
+    opts.to = parseFloat(opts.to) * 1000;
+  }
+
+  var ffmpegArgs = computeFFmpegArgs(opts);
+  var convertArgs = computeConvertArgs(opts);
+  var gifsicleArgs = computeGifsicleArgs(opts);
+
+  var ffmpeg = spawn(&#x27;ffmpeg&#x27;, ffmpegArgs);
+  var convert = spawn(&#x27;convert&#x27;, convertArgs);
+  var gifsicle = spawn(&#x27;gifsicle&#x27;, gifsicleArgs);
+
+  [ffmpeg, convert, gifsicle].forEach(function handleErrors(child) {
+    child.on(&#x27;error&#x27;, gifsicle.emit.bind(gifsicle, &#x27;error&#x27;));
+    child.stderr.on(&#x27;data&#x27;, function gotSomeErrors(buf) {
+      // emit errors on the resolved stream
+      gifsicle.stdout.emit(&#x27;error&#x27;, buf.toString());
+    });
+  });
+
+  // https://github.com/joyent/node/issues/8652
+  ffmpeg.stdin.on(&#x27;error&#x27;, function ignoreStdinError(){});
+
+  // ffmpeg.stdout.on(&#x27;error&#x27;, function() {})
+  // convert.stdin.on(&#x27;error&#x27;, function(){});
+  // convert.stdout.on(&#x27;error&#x27;, function() {});
+  // gifsicle.stdin.on(&#x27;error&#x27;, function() {});
+  // gifsicle.stdout.on(&#x27;error&#x27;, function() {})
+
+  if (!opts.inputFilePath) {
+    streamOrFile.pipe(ffmpeg.stdin);
+  }
+
+  ffmpeg.stdout.pipe(convert.stdin);
+  convert.stdout.pipe(gifsicle.stdin);
+  return gifsicle.stdout;
+}</pre></li>
+    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    </ul>
+
+
+</div>
+
+<div class="apidocFooterDiv">
+    [ this document was created with
+    <a href="https://github.com/kaizhu256/node-utility2" target="_blank">utility2</a>
+    ]
+</div>
+</div>
